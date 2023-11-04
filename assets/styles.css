@@ -1,0 +1,57 @@
+:root {
+	--gray: #ccc;
+	--padding: 10px;
+	--border-radius: 5px;
+}
+
+.word-changer {
+	margin-right: 20px;
+}
+
+.word-changer-cols {
+	display: flex;
+	border: 1px solid var(--gray);
+	border-radius: var(--border-radius);
+	padding: var(--padding);
+}
+
+.word-changer-col {
+	width: 25%;
+	padding: var(--padding);
+}
+
+.word-changer-col * {
+	max-width: 100%;
+}
+
+.word-changer-col:not(:last-child) {
+	border-right: 1px solid var(--gray);
+}
+
+.word-changer-col-heading-title {
+	text-align: center;
+}
+
+.word-changer-change-form input {
+	display: block;
+	margin: 5px auto;
+}
+
+.word-changer-col-results li {
+	padding: var(--padding);
+	border-top: 1px solid var(--gray);
+}
+
+.word-changer-answer {
+	margin-top: 15px;
+	display: none;
+	padding: var(--padding);
+	border: 1px solid var(--gray);
+	border-radius: var(--border-radius);
+}
+
+.word-changer-answer .success {
+	color: #005700;
+	font-size: 20px;
+	text-align: center;
+}
