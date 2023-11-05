@@ -7,15 +7,13 @@ class Replace {
 		// Register admin styles and scripts.
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin' ) );
 
-		// Add menu item to dashboardAdd menu item to dashboard.
+		// Add menu item to dashboard.
 		add_action( 'admin_menu', array( $this, 'add_menu_item' ) );
 
-		// Some methods for ajax.
-		add_action( 'wp_ajax_nopriv_search_form', array( $this, 'search_form' ) );
+		// Logic for AJAX of search form.
 		add_action( 'wp_ajax_search_form', array( $this, 'search_form' ) );
 
-		// Some methods for ajax.
-		add_action( 'wp_ajax_nopriv_replace_form', array( $this, 'replace_form' ) );
+		// Logic for AJAX of replace form.
 		add_action( 'wp_ajax_replace_form', array( $this, 'replace_form' ) );
 	}
 
@@ -35,13 +33,14 @@ class Replace {
 		add_menu_page( $name, $name, 'edit_posts', $this->page_slug, array( $this, 'menu_item_template' ) );
 	}
 
+	// Template of added menu to dashboard.
 	public function menu_item_template() {
 		include 'templates/template.php';
 	}
 
 	public function search_form() {
-		if ( ! empty( $_POST['keyword'] ) && wp_verify_nonce( $_POST['_wpnonce'] ) ) {
-			$keyword = sanitize_text_field( $_POST['keyword'] );
+		if ( $_POST['keyword'] !== '' && check_ajax_referer() ) {
+			$keyword = sanitize_text_field( wp_unslash( $_POST['keyword'] ) );
 
 			global $wpdb;
 			$result = array();
@@ -63,7 +62,7 @@ class Replace {
 			);
 
 			if ( is_yoast_activated() ) {
-				// Get posts with _yoast_wpseo_metadesc, contains keyword.
+				// Get posts with _yoast_wpseo_title, contains keyword.
 				$result['post_metatitle'] = $wpdb->get_results(
 					$wpdb->prepare(
 						"SELECT post_id, meta_value
@@ -86,6 +85,7 @@ class Replace {
 				);
 			}
 
+			// Return result.
 			echo wp_json_encode( $result );
 
 			wp_die();
@@ -95,12 +95,21 @@ class Replace {
 	}
 
 	public function replace_form() {
-		if ( ! empty( $_POST['new-value'] ) && ! empty( $_POST['old_val'] ) && ! empty( $_POST['change_field'] ) && isset( $_POST['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ) ) ) {
+		if (
+			empty( $_POST['new-value'] ) && empty( $_POST['old_val'] ) && empty( $_POST['change_field'] )
+			&& ! check_ajax_referer() && current_user_can( 'administrator' )
+		) {
+
+			// Return null if no new-value/old_val/change-field or wpnonce check failed or user isn't administrator
+			return null;
+
+		} else {
+
 			// New and old values
-			$new_value = sanitize_text_field( $_POST['new-value'] );
-			$old_val   = sanitize_text_field( $_POST['old_val'] );
+			$new_value = sanitize_text_field( wp_unslash( $_POST['new-value'] ) );
+			$old_val   = sanitize_text_field( wp_unslash( $_POST['old_val'] ) );
 
-
+			// Match fields name with col names in database.
 			$change_fields = [
 				'title'            => 'post_title',
 				'content'          => 'post_content',
@@ -108,8 +117,8 @@ class Replace {
 				'meta-description' => '_yoast_wpseo_metadesc',
 			];
 
-			// Field to change
-			$change_field = sanitize_text_field( $_POST['change_field'] );
+			// Field to change.
+			$change_field = sanitize_text_field( wp_unslash( $_POST['change_field'] ) );
 
 			// If we haven't those types - exit from query
 			$database_col = $change_fields[ $change_field ];
@@ -145,14 +154,12 @@ class Replace {
 				);
 			}
 
+			// Return result.
 			$result = $wpdb->query( $query );
 			echo $result;
 
-
 			wp_die();
 
-		} else {
-			return null;
 		}
 	}
 }

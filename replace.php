@@ -1,8 +1,5 @@
 <?php
 /**
- * Bitcoin shortcode plugin
- *
- * @package Replace
  * Plugin Name: Word Search & Replace
  * Description: Add admin page in dashboard to search word in title, content, meta-title, meta-description
  * Version: 1.0
@@ -15,13 +12,17 @@
 // require Replace class.
 require 'class-replace.php';
 
-$replace = new Replace();
-$replace->init();
+// Run plugin on hook
+add_action( 'plugins_loaded', 'run_replace_plugin' );
+function run_replace_plugin() {
+	$replace = new Replace();
+	$replace->init();
+}
 
 /**
  * Is Yoast SEO plugin installed and activated
  * @return bool
  */
 function is_yoast_activated() {
-	return  in_array( 'wordpress-seo/wp-seo.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) ) ;
+	return defined( 'WPSEO_VERSION' );
 }

@@ -1,5 +1,5 @@
 
-# Bitcoin generator
+# Word Search & Replace
 
 This plugin create new page "Word changer" in dashboard.
 
